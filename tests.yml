@@ -1,0 +1,15 @@
+---
+
+- name: Run integration tests
+  hosts: all
+  become: true
+
+  tasks:
+
+  - name: Access site via inventory_hostname
+    uri:
+      url: "http://{{ ansible_fqdn }}"
+      status_code: 200
+    register: uri_test
+    tags:
+      - integration-tests

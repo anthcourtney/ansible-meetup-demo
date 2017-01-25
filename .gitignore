@@ -1,0 +1,4 @@
+*.retry
+tests/roles
+tests/.vagrant
+.tox

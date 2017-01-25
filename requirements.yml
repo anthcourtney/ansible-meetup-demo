@@ -1,0 +1,15 @@
+---
+
+- name: common
+  src: git+ssh://git@github.com/anthcourtney/ansible-role-common.git
+  version: master
+  path: roles
+- name: ntp
+  src: git+ssh://git@github.com/anthcourtney/ansible-role-ntp.git
+  version: master
+  path: roles
+- name: nginx
+  src: git+ssh://git@github.com/anthcourtney/ansible-role-nginx.git
+  version: master
+  path: roles
+
