@@ -1,33 +1,65 @@
+ifndef USE_VM
+  USE_VM := false
+endif
+
 # Main goals
 
-clean: vagrant-destroy
+clean: cleanup-roles
+ifeq ($(USE_VM),true)
+	${MAKE} vagrant-destroy 
+endif
 
-test: vagrant-up syntax-check vagrant-provision idempotency-test integration-test
+create: 
+ifeq ($(USE_VM),true)
+	${MAKE} vagrant-up
+endif
 
-deploy: requirements run-playbook
+prepare: requirements syntax-check
 
-# Helper goals
+converge:
+ifeq ($(USE_VM),true)
+	@${MAKE} vagrant-provision
+else
+	@${MAKE} run-playbook
+endif
 
-## Setup 
+setup: create prepare converge
+
+test:
+ifeq ($(USE_VM),true)
+	@${MAKE} idempotency-test
+endif
+	@${MAKE} functional-test
+
+# Create helpers
+
+vagrant-up:
+	@vagrant up --no-provision
+
+# Prepare helpers
 
 requirements:
 	@ansible-galaxy install -r requirements.yml -p roles -f
 
-test-requirements:
-	@ansible-galaxy install -r tests/requirements.yml -p tests/roles -f
-
-## Deployment
-
-run-playbook:
-	@ansible-playbook -i inventory site.yml
-
-## Tests
-
 syntax-check:
 	@echo 'Running syntax-check'
-	@cd tests && ansible-playbook -i localhost, --syntax-check --list-tasks site.yml \
+	@ansible-playbook -i localhost, --syntax-check --list-tasks site.yml \
 	  && (echo 'Passed syntax-check'; exit 0) \
 	  || (echo 'Failed syntax-check'; exit 1)
+
+# Converge helpers
+
+vagrant-provision:
+	@vagrant provision
+
+run-playbook:
+ifdef tags
+	@ansible-playbook -i inventory -t "${tags}" -e "${extra_vars}" site.yml
+else
+	@ansible-playbook -i inventory -e "${extra_vars}" site.yml
+endif
+
+## Test helpers
 
 idempotency-test:
 	@echo 'Running idempotency test'
@@ -36,19 +68,34 @@ idempotency-test:
 	  && (echo 'Passed idempotency test'; exit 0) \
 	  || (echo "Failed idempotency test"; exit 1)
 
-integration-test:
-	@echo 'Running integration test'
+functional-test:
+	@echo 'Running functional test'
+ifeq ($(USE_VM),true)
+	@${MAKE} functional-test-vagrant
+else
+	@${MAKE} functional-test-non-vagrant
+endif
+
+functional-test-vagrant:
 	@RUN_TESTS=true ${MAKE} vagrant-provision \
-	  && (echo 'Passed integration test'; exit 0) \
-	  || (echo 'Failed integration test'; exit 1)
+	  && (echo 'Passed functional test'; exit 0) \
+	  || (echo 'Failed functional test'; exit 1)
 
-## Vagrant
+functional-test-non-vagrant:
+	@${MAKE} run-playbook tags="functional-tests" extra_vars="run_tests=true" \
+	&& (echo 'Passed functional test'; exit 0) \
+	|| (echo 'Failed functional test'; exit 1)
+
+## Clean helpers
+
+cleanup-roles:
+	@if [ -d roles ]; then rm -rf roles; fi
 	
-vagrant-up:
-	@cd tests && vagrant up --no-provision
-
 vagrant-destroy:
-	@cd tests && vagrant destroy -f
+	@vagrant destroy -f
 
-vagrant-provision:
-	@cd tests && vagrant provision
+# Misc
+
+vagrant-ssh:
+	@vagrant ssh
+

@@ -1,4 +1,4 @@
 *.retry
-tests/roles
-tests/.vagrant
+.vagrant
 .tox
+roles/
