@@ -29,8 +29,8 @@
       url: "http://{{ ansible_fqdn }}/api/users/anth"
       method: GET
       force_basic_auth: yes
-      user: "admin"
-      password: "admin123"
+      user: "{{ service_user }}"
+      password: "{{ service_password }}"
     register: api_request
     tags:
       - integration-tests
