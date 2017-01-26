@@ -2,9 +2,11 @@
 
 clean: vagrant-destroy
 
+setup: requirements
+
 test: test-requirements vagrant-up syntax-check vagrant-provision idempotency-test integration-test
 
-deploy: requirements run-playbook
+go: run-playbook
 
 # Helper goals
 
