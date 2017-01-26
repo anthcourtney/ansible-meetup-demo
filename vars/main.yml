@@ -4,8 +4,8 @@ service_user: "admin"
 service_password: "admin123"
 
 nginx_conf_d_files:
-  - src: "etc/nginx/conf.d/status.conf"
-    dest: "/etc/nginx/conf.d/status.conf"
+  - src: "etc/nginx/default.d/status.conf"
+    dest: "/etc/nginx/default.d/status.conf"
 
 nginx_conf_d_templates:
   - src: "etc/nginx/default.d/auth.conf.j2"
