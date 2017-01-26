@@ -1,0 +1,10 @@
+        location /api {
+          auth_basic "Authentication Required";
+          auth_basic_user_file {{ nginx_htpasswd_file }};
+
+          # add .json to URI and serve file, directory, or symlink if it exists
+          if (-e $request_filename.json) {
+            rewrite ^/(.*)$ /$1.json last;
+            break;
+          }
+        }

@@ -4,6 +4,9 @@
   hosts: all
   become: true
 
+  vars_files:
+    - vars/main.yml
+
   tasks:
 
   - name: Access site via inventory_hostname
@@ -11,5 +14,32 @@
       url: "http://{{ ansible_fqdn }}"
       status_code: 200
     register: uri_test
+    tags:
+      - integration-tests
+
+  - name: Access secure area without authenticating
+    uri:
+      url: "http://{{ ansible_fqdn }}/api/users/anth"
+      status_code: 401
+    tags:
+      - integration-tests
+
+  - name: Access secure area with authentication
+    uri:
+      url: "http://{{ ansible_fqdn }}/api/users/anth"
+      method: GET
+      force_basic_auth: yes
+      user: "admin"
+      password: "admin123"
+    register: api_request
+    tags:
+      - integration-tests
+    
+  - name: Validate that api request response contains required information
+    assert:
+      that:
+        - api_request.json.name is defined
+        - api_request.json.username == 'anth'
+        - api_request.json.email | search("@")
     tags:
       - integration-tests

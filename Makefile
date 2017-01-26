@@ -2,7 +2,7 @@
 
 clean: vagrant-destroy
 
-test: vagrant-up syntax-check vagrant-provision idempotency-test integration-test
+test: test-requirements vagrant-up syntax-check vagrant-provision idempotency-test integration-test
 
 deploy: requirements run-playbook
 
@@ -52,3 +52,6 @@ vagrant-destroy:
 
 vagrant-provision:
 	@cd tests && vagrant provision
+
+vagrant-ssh:
+	@cd tests && vagrant ssh

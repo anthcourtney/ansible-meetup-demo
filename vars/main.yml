@@ -1,0 +1,14 @@
+---
+
+service_user: "admin"
+service_password: "admin123"
+
+nginx_conf_d_templates:
+  - src: "etc/nginx/default.d/auth.conf.j2"
+    dest: "/etc/nginx/default.d/auth.conf"
+
+nginx_htpasswd_users:
+  - username: "{{ service_user }}"
+    password: "{{ service_password }}"
+
+nginx_root_dir: "/usr/share/nginx/html"
