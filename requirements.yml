@@ -12,4 +12,3 @@
   src: git+ssh://git@github.com/anthcourtney/ansible-role-nginx.git
   version: master
   path: roles
-

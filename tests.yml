@@ -1,6 +1,6 @@
 ---
 
-- name: Run integration tests
+- name: Run functional tests
   hosts: all
   become: true
 
@@ -15,14 +15,14 @@
       status_code: 200
     register: uri_test
     tags:
-      - integration-tests
+      - functional-tests
 
   - name: Access secure area without authenticating
     uri:
       url: "http://{{ ansible_fqdn }}/api/users/anth"
       status_code: 401
     tags:
-      - integration-tests
+      - functional-tests
 
   - name: Access secure area with authentication
     uri:
@@ -33,7 +33,7 @@
       password: "{{ service_password }}"
     register: api_request
     tags:
-      - integration-tests
+      - functional-tests
     
   - name: Validate that api request response contains required information
     assert:
@@ -42,4 +42,4 @@
         - api_request.json.username == 'anth'
         - api_request.json.email | search("@")
     tags:
-      - integration-tests
+      - functional-tests
