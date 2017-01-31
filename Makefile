@@ -73,7 +73,7 @@ functional-test-vagrant:
 	  || (echo 'Failed functional test'; exit 1)
 
 functional-test-non-vagrant:
-	@${MAKE} run_playbook tags="functional-tests" extra_vars="run_tests=true" \
+	@${MAKE} run-playbook tags="functional-tests" extra_vars="run_tests=true" \
 	&& (echo 'Passed functional test'; exit 0) \
 	|| (echo 'Failed functional test'; exit 1)
 
