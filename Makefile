@@ -1,22 +1,47 @@
-clean: vagrant-destroy cleanup-roles
+clean: cleanup-roles
+ifeq ($(USE_VAGRANT),true)
+	${MAKE} vagrant-destroy 
+endif
 
-setup: requirements
+create: 
+ifeq ($(USE_VAGRANT),true)
+	${MAKE} vagrant-up
+endif
 
-test: syntax-check vagrant-up vagrant-provision idempotency-test functional-test
+prepare: requirements syntax-check
 
-deploy: run-playbook
+converge:
+ifeq ($(USE_VAGRANT),true)
+	@${MAKE} vagrant-provision
+else
+	@${MAKE} run-playbook
+endif
 
-test-deploy: 
-	${MAKE} deploy tags="functional-tests" extra_vars="run_tests=true"
+test:
+ifeq ($(USE_VAGRANT),true)
+	@${MAKE} idempotency-test
+endif
+	@${MAKE} functional-test
 
-# Helpers
+# Create helpers
+vagrant-up:
+	@vagrant up --no-provision
 
-## Setup 
+# Prepare helpers
 
 requirements:
 	@ansible-galaxy install -r requirements.yml -p roles -f
 
-## Deployment
+syntax-check:
+	@echo 'Running syntax-check'
+	@ansible-playbook -i localhost, --syntax-check --list-tasks site.yml \
+	  && (echo 'Passed syntax-check'; exit 0) \
+	  || (echo 'Failed syntax-check'; exit 1)
+
+# Converge helpers
+
+vagrant-provision:
+	@vagrant provision
 
 run-playbook:
 ifdef tags
@@ -25,13 +50,7 @@ else
 	@ansible-playbook -i inventory -e "${extra_vars}" site.yml
 endif
 
-## Tests
-
-syntax-check:
-	@echo 'Running syntax-check'
-	@ansible-playbook -i localhost, --syntax-check --list-tasks site.yml \
-	  && (echo 'Passed syntax-check'; exit 0) \
-	  || (echo 'Failed syntax-check'; exit 1)
+## Test helpers
 
 idempotency-test:
 	@echo 'Running idempotency test'
@@ -42,25 +61,31 @@ idempotency-test:
 
 functional-test:
 	@echo 'Running functional test'
+ifeq ($(USE_VAGRANT),true)
+	@${MAKE} functional-test-vagrant
+else
+	@${MAKE} functional-test-non-vagrant
+endif
+
+functional-test-vagrant:
 	@RUN_TESTS=true ${MAKE} vagrant-provision \
 	  && (echo 'Passed functional test'; exit 0) \
 	  || (echo 'Failed functional test'; exit 1)
 
-## Cleanup
+functional-test-non-vagrant:
+	@${MAKE} run_playbook tags="functional-tests" extra_vars="run_tests=true" \
+	&& (echo 'Passed functional test'; exit 0) \
+	|| (echo 'Failed functional test'; exit 1)
+
+## Clean helpers
 
 cleanup-roles:
 	@if [ -d roles ]; then rm -rf roles; fi
-
-## Vagrant
 	
-vagrant-up:
-	@vagrant up --no-provision
-
 vagrant-destroy:
 	@vagrant destroy -f
 
-vagrant-provision:
-	@vagrant provision
+# Misc
 
 vagrant-ssh:
 	@vagrant ssh
