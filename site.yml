@@ -9,23 +9,17 @@
 
   pre_tasks:
 
-  - name: Check ansible version is suitable for this playbook/role
+  - name: Check ansible version is suitable for this playbook
     assert:
       that: ansible_version.full | version_compare('2.1', '>=')
-      msg: "Ansible version 2.1 or greater is required for this playbook/role"
+      msg: "Ansible version 2.1 or greater is required for this playbook"
 
   roles:
     - common
     - ntp
     - nginx
-
-  post_tasks:
-
-  - name: Copy html content
-    synchronize:
-      src: "files/{{ nginx_root_dir }}/"
-      dest: "{{ nginx_root_dir }}/"
+    - api
 
 - name: Include tests
   include: tests.yml
-  when: run_tests is defined and run_tests
+  when: run_tests|default() | bool

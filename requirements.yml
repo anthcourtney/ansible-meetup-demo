@@ -12,3 +12,8 @@
   src: git+ssh://git@github.com/anthcourtney/ansible-role-nginx.git
   version: master
   path: roles
+- name: api
+  src: git+ssh://git@github.com/anthcourtney/ansible-role-api.git
+  version: master
+  path: roles
+
