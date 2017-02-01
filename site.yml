@@ -3,29 +3,34 @@
 - name: Setup environment
   hosts: all
   become: true
+  serial: 1
 
   vars_files:
     - vars/main.yml
 
   pre_tasks:
 
-  - name: Check ansible version is suitable for this playbook/role
-    assert:
-      that: ansible_version.full | version_compare('2.1', '>=')
-      msg: "Ansible version 2.1 or greater is required for this playbook/role"
+  - name: Deregister instance from ELB
+    local_action:
+      module: ec2_elb
+      instance_id: "{{ ansible_ec2_instance_id }}"
+      state: absent 
+    register: ec2_elbs
 
   roles:
     - common
     - ntp
     - nginx
+    - api
+    - functional-tests
+      when: run_tests|default() | bool
 
   post_tasks:
 
-  - name: Copy html content
-    synchronize:
-      src: "files/{{ nginx_root_dir }}/"
-      dest: "{{ nginx_root_dir }}/"
-
-- name: Include tests
-  include: tests.yml
-  when: run_tests is defined and run_tests
+  - name: Register instance in ELB
+    local_action:
+      module: ec2_elb
+      instance_id: "{{ ansible_ec2_instance_id }}"
+      ec2_elbs: "{{ item }}"
+      state: present
+    with_items: "{{ ec2_elbs }}"	
