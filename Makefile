@@ -21,13 +21,13 @@ else
 	@${MAKE} run-playbook
 endif
 
+setup: create prepare converge
+
 test:
 ifeq ($(USE_VM),true)
 	@${MAKE} idempotency-test
 endif
 	@${MAKE} functional-test
-
-setup: create prepare converge
 
 # Create helpers
 
