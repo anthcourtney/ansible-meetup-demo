@@ -22,8 +22,7 @@
     - ntp
     - nginx
     - api
-    - functional-tests
-      when: run_tests|default() | bool
+    - { role: functional-tests, when: run_tests|default() | bool }
 
   post_tasks:
 
