@@ -1,29 +1,36 @@
+USE_VM := false
+
+# Main goals
+
 clean: cleanup-roles
-ifeq ($(USE_VAGRANT),true)
+ifeq ($(USE_VM),true)
 	${MAKE} vagrant-destroy 
 endif
 
 create: 
-ifeq ($(USE_VAGRANT),true)
+ifeq ($(USE_VM),true)
 	${MAKE} vagrant-up
 endif
 
 prepare: requirements syntax-check
 
 converge:
-ifeq ($(USE_VAGRANT),true)
+ifeq ($(USE_VM),true)
 	@${MAKE} vagrant-provision
 else
 	@${MAKE} run-playbook
 endif
 
 test:
-ifeq ($(USE_VAGRANT),true)
+ifeq ($(USE_VM),true)
 	@${MAKE} idempotency-test
 endif
 	@${MAKE} functional-test
 
+setup: create prepare converge
+
 # Create helpers
+
 vagrant-up:
 	@vagrant up --no-provision
 
@@ -61,7 +68,7 @@ idempotency-test:
 
 functional-test:
 	@echo 'Running functional test'
-ifeq ($(USE_VAGRANT),true)
+ifeq ($(USE_VM),true)
 	@${MAKE} functional-test-vagrant
 else
 	@${MAKE} functional-test-non-vagrant
@@ -89,3 +96,4 @@ vagrant-destroy:
 
 vagrant-ssh:
 	@vagrant ssh
+
