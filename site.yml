@@ -13,6 +13,8 @@
     assert:
       that: ansible_version.full | version_compare('2.1', '>=')
       msg: "Ansible version 2.1 or greater is required for this playbook"
+    tags:
+      - smoke-test
 
   roles:
     - common
@@ -20,6 +22,6 @@
     - nginx
     - api
 
-- name: Include tests
+- name: Include functional tests
   include: tests.yml
   when: run_tests|default() | bool
