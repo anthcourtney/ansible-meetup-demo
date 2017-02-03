@@ -1,4 +1,6 @@
-USE_VM := false
+ifndef USE_VM
+  USE_VM := false
+endif
 
 # Main goals
 
